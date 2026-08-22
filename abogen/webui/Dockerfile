@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.6.3-cudnn-runtime-ubuntu22.04
+FROM ubuntu:22.04
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
@@ -31,12 +31,14 @@ RUN pip install uv \
        uv pip install --system torch=="$TORCH_VERSION" torchvision=="$TORCH_VERSION" torchaudio=="$TORCH_VERSION" --index-url "$TORCH_INDEX_URL"; \
      else \
        uv pip install --system torch torchvision torchaudio --index-url "$TORCH_INDEX_URL"; \
-     fi \
-  && uv pip install --system . \
-    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl \
-  && uv pip install --system "mutagen>=1.47.0"
+     fi
 
 COPY abogen ./abogen
+COPY plugins ./plugins
+
+RUN uv pip install --system . \
+    https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl \
+  && uv pip install --system "mutagen>=1.47.0"
 
 # Install onnxruntime-gpu for CUDA acceleration (supertonic uses ONNX Runtime)
 # Set USE_GPU=false to skip this for CPU-only deployments
