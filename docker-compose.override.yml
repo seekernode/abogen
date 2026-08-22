@@ -1,0 +1,11 @@
+# CPU-only override for g11. Upstream caps at 4 CPUs; Kokoro measured 2.2x
+# realtime using all 16 threads, so that cap would make a novel take ~4x longer.
+services:
+  abogen:
+    deploy:
+      resources:
+        limits:
+          cpus: "16.0"
+          memory: 10G
+    environment:
+      PYTHONPATH: /app
