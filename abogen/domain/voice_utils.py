@@ -120,10 +120,10 @@ def resolve_voice_target(
             speed = float(entry.get("speed") or job_speed or 1.0)
             return "supertonic", supertonic_voice_from_spec(voice, job_voice), speed, steps
         formula = formula_from_kokoro_entry(entry)
-        return "kokoro", formula or spec, None, None
+        return "kokoro", formula or spec, job_speed, None
 
     fallback_provider = str(job_tts_provider or "kokoro").strip().lower() or "kokoro"
     inferred = infer_provider_from_spec(spec, fallback=fallback_provider)
     if inferred == "supertonic":
         return "supertonic", supertonic_voice_from_spec(spec, job_voice), None, None
-    return "kokoro", spec, None, None
+    return "kokoro", spec, job_speed, None
