@@ -40,6 +40,9 @@ RUN uv pip install --system . \
     https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl \
   && uv pip install --system "mutagen>=1.47.0"
 
+RUN /usr/bin/python3 -c "from static_ffmpeg import run; run.get_or_fetch_platform_executables_else_raise()" \
+  && chmod -R a+rX /usr/local/lib/python3.10/dist-packages/static_ffmpeg
+
 # Install onnxruntime-gpu for CUDA acceleration (supertonic uses ONNX Runtime)
 # Set USE_GPU=false to skip this for CPU-only deployments
 RUN if [ "$USE_GPU" = "true" ]; then \
