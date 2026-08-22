@@ -1,4 +1,5 @@
 from __future__ import annotations
+import subprocess
 
 import json
 import logging
@@ -144,9 +145,10 @@ class ExportService:
             cmd.extend(["-f", "ffmetadata", "-i", str(ffmetadata_path)])
         
         if cover_path and cover_path.exists():
+            cover_input_index = 2 if ffmetadata_path else 1
             cmd.extend(["-i", str(cover_path)])
             cmd.extend(["-map", "0:a"])
-            cmd.extend(["-map", "1:v:0", "-c:v:0", "mjpeg", "-disposition:v:0", "attached_pic"])
+            cmd.extend(["-map", f"{cover_input_index}:v:0", "-c:v:0", "mjpeg", "-disposition:v:0", "attached_pic"])
             if cover_mime:
                 cmd.extend(["-metadata:s:v:0", f"mimetype={cover_mime}"])
             cmd.extend(["-metadata:s:v:0", "title=Cover Art"])
@@ -173,8 +175,9 @@ class ExportService:
         if log_callback:
             log_callback("Embedding metadata into M4B output")
         
-        process = create_process(cmd, text=True)
-        return_code = process.wait()
+        process = create_process(cmd, text=True, capture_output=True)
+        ffmpeg_stderr, _ = process.communicate()
+        return_code = process.returncode
         
         if ffmetadata_path and ffmetadata_path.exists():
             try:
@@ -185,7 +188,7 @@ class ExportService:
         if return_code != 0:
             if temp_output.exists():
                 temp_output.unlink(missing_ok=True)
-            raise RuntimeError(f"ffmpeg failed to embed metadata (exit code {return_code})")
+            raise RuntimeError(f"ffmpeg failed to embed metadata (exit code {return_code}): {(ffmpeg_stderr or '')[-2000:]}")
         
         temp_output.replace(audio_path)
         
